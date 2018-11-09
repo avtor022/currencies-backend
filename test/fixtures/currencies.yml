@@ -1,0 +1,11 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  currency_type: 
+  currency_value: 
+  forcing_date: 2018-10-29
+
+two:
+  currency_type: 
+  currency_value: 
+  forcing_date: 2018-10-29
