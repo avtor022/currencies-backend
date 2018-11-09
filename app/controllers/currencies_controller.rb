@@ -4,15 +4,15 @@ class CurrenciesController < ApplicationController
   before_action :update_cache, only: :get_currencies if :update_cache?
 
   def index
-    if @currencies && @currencies[:dt] && @currencies[:et]
-      render json: {
-        success: true,
-        currencies: @currencies
-      }
-    else
+    if :currencies?
       render json: {
         success: false,
         msg: "Can't get data about currencies"
+      }
+    else
+      render json: {
+        success: true,
+        currencies: @currencies
       }
     end
   end
@@ -73,6 +73,12 @@ class CurrenciesController < ApplicationController
     Currency.from_cache.nil? ||
     Currency.from_cache['current_dollar'].nil? ||
     Currency.from_cache['current_euro'].nil?
+  end
+
+  def currencies
+    @currencies.nil? ||
+    @currencies[:dt].nil? ||
+    @currencies[:et].nil?
   end
 
   def currency_params
