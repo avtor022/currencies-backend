@@ -1,14 +1,10 @@
 class CurrenciesController < ApplicationController
   after_action :update_cache, only: [:create_forcing, :destroy_forcing]
-  before_action :get_currencies, only: :index
-  before_action :update_cache, only: :get_currencies if :update_cache?
 
   def index
-    if :currencies?
-      render json: {
-        success: false,
-        msg: "Can't get data about currencies"
-      }
+    get_currencies
+    if @currencies.nil? || @currencies[:dt].nil? || @currencies[:et].nil?
+      :get_currencies
     else
       render json: {
         success: true,
@@ -16,7 +12,6 @@ class CurrenciesController < ApplicationController
       }
     end
   end
-
 
   def create_forcing
     index_forcing if Currency.new(currency_params).save
@@ -40,23 +35,17 @@ class CurrenciesController < ApplicationController
   private
 
   def get_currencies
+    update_cache if Currency.update_cache?
     @currencies = { 'dt': Currency.from_cache['current_dollar'], 'et': Currency.from_cache['current_euro'] }
   end
 
   def update_cache
-    get_data_from_site
     currency_forcing = Currency.forcing_current
-    dt = get_currency_value(currency_forcing[:dollar], get_data_from_site.css('tr')[1])
+    dt = get_currency_value(currency_forcing[:dollar], CurrencyFromSite.get_data.css('tr')[1])
     Currency.update_in_cache({currency_type: 'dollar', currency_value: dt[:currency_value], forcing_date: dt[:valid_until]})
-    et = get_currency_value(currency_forcing[:euro], get_data_from_site.css('tr')[2])
+    et = get_currency_value(currency_forcing[:euro], CurrencyFromSite.get_data.css('tr')[2])
     Currency.update_in_cache({currency_type: 'euro', currency_value: et[:currency_value], forcing_date: et[:valid_until]})
     @currencies = { 'dt': dt[:currency_value], 'et': et[:currency_value] }
-  end
-
-  def get_data_from_site
-    require 'open-uri'
-    doc = Nokogiri::HTML(open("https://www.cbr.ru/"))
-    doc.css('table')[2]
   end
 
   def get_currency_value(currency_forcing, currency_from_site)
@@ -67,18 +56,6 @@ class CurrenciesController < ApplicationController
        [currency_from_site.css('td')[2].text.scan(/\d{1,5}\,\d{1,5}/)[0], (Time.now + 1.day).at_beginning_of_day]
      end
     { currency_value: currency_value, valid_until: valid_until }
-  end
-
-  def update_cache?
-    Currency.from_cache.nil? ||
-    Currency.from_cache['current_dollar'].nil? ||
-    Currency.from_cache['current_euro'].nil?
-  end
-
-  def currencies
-    @currencies.nil? ||
-    @currencies[:dt].nil? ||
-    @currencies[:et].nil?
   end
 
   def currency_params

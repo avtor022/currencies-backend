@@ -20,7 +20,7 @@ RSpec.describe CurrenciesController do
   end
 
   describe "DELETE #destroy_forcing" do
-    before(:each) do
+    before do
       currency = create(:currency)
       delete(:destroy_forcing, params: {id: currency.id})
     end

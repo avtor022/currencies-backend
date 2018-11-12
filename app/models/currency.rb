@@ -18,6 +18,12 @@ class Currency < ApplicationRecord
     def update_in_cache(currency_data)
       Rails.cache.write("current_#{currency_data[:currency_type]}", currency_data[:currency_value], expires_in: (currency_data[:forcing_date] - Time.now).to_i)
     end
+
+    def update_cache?
+      from_cache.nil? ||
+      from_cache['current_dollar'].nil? ||
+      from_cache['current_euro'].nil?
+    end
   end
 
   def forcing_date_datetime
