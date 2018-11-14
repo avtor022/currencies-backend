@@ -21,16 +21,14 @@ RSpec.describe CurrenciesController do
 
   context "delete currency forcing record" do
     let!(:currency) { create(:currency) }
-    before do
-      delete(:destroy_forcing, params: {id: currency.id})
-    end
     describe "DELETE #destroy_forcing" do
       it "should return status 200" do
+        delete(:destroy_forcing, params: {id: currency.id})
         expect(response.status).to eq 200
       end
 
       it "should't find deleted record" do
-        expect(Currency.count).to eq(0)
+        expect{delete(:destroy_forcing, params: {id: currency.id})}.to change(Currency, :count).by(-1)
       end
     end
   end
