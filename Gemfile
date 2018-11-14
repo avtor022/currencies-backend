@@ -19,9 +19,14 @@ group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
 
+  # Use database_cleaner gem
+  gem 'database_cleaner'
+
+  # Use factory_bot_rails gem for factories
+  gem 'factory_bot_rails'
+
   # Testing with RSpec
   gem 'rspec-rails', '~> 3.8'
-  gem 'factory_bot_rails'
 end
 
 group :development do

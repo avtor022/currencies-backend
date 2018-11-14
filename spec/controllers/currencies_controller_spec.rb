@@ -7,8 +7,8 @@ RSpec.describe CurrenciesController do
       get :index
       parsed_response = JSON.parse(response.body)
       expect(parsed_response['success']).to match true
-      expect(parsed_response['currencies']['dt']).to match /\d{1,5}\,\d{1,5}/
-      expect(parsed_response['currencies']['et']).to match /\d{1,5}\,\d{1,5}/
+      expect(parsed_response['currencies']['dollar']).to be_kind_of(Float)
+      expect(parsed_response['currencies']['euro']).to be_kind_of(Float)
     end
   end
 
@@ -19,15 +19,19 @@ RSpec.describe CurrenciesController do
     end
   end
 
-  describe "DELETE #destroy_forcing" do
+  context "delete currency forcing record" do
+    let!(:currency) { create(:currency) }
     before do
-      currency = create(:currency)
       delete(:destroy_forcing, params: {id: currency.id})
     end
-
-    it "should return status 200" do
+    describe "DELETE #destroy_forcing" do
+      it "should return status 200" do
         expect(response.status).to eq 200
+      end
+
+      it "should't find deleted record" do
+        expect(Currency.count).to eq(0)
+      end
     end
   end
-
 end
