@@ -1,4 +1,7 @@
 class Currency < ApplicationRecord
+  CACHE_KEY_DOLLAR = 'current_dollar'.freeze
+  CACHE_KEY_EURO = 'current_euro'.freeze
+
   validate :forcing_date_datetime
   validates :currency_type, inclusion: { in: %w(dollar euro), message: "must be 'dollar' or 'euro'" }
   validates :currency_value, :forcing_date, presence: true
@@ -12,17 +15,40 @@ class Currency < ApplicationRecord
     end
 
     def from_cache
-      Rails.cache.read_multi('current_dollar', 'current_euro')
+      Rails.cache.read_multi(CACHE_KEY_DOLLAR, CACHE_KEY_EURO)
     end
 
-    def update_in_cache(currency_data)
+    def get_currencies
+      update_cache if cache_nil?
+      { 'dollar': from_cache[CACHE_KEY_DOLLAR], 'euro': from_cache[CACHE_KEY_EURO] }
+    end
+
+    def currency_to_cache(currency_data)
       Rails.cache.write("current_#{currency_data[:currency_type]}", currency_data[:currency_value], expires_in: (currency_data[:forcing_date] - Time.now).to_i)
     end
 
-    def update_cache?
+    def update_cache
+      currency_forcing = forcing_current
+      dollar = current_value_for_cache(currency_forcing[:dollar], CurrencyFromSite.current_dollar)
+      currency_to_cache({currency_type: 'dollar', currency_value: dollar[:currency_value], forcing_date: dollar[:valid_until]})
+      euro = current_value_for_cache(currency_forcing[:euro], CurrencyFromSite.current_euro)
+      currency_to_cache({currency_type: 'euro', currency_value: euro[:currency_value], forcing_date: euro[:valid_until]})
+    end
+
+    def current_value_for_cache(currency_forcing, currency_from_site)
+      currency_value, valid_until =
+        if currency_forcing
+          [currency_forcing.currency_value, currency_forcing.forcing_date.at_end_of_day]
+        else
+          [currency_from_site, (Time.now + 1.day).at_beginning_of_day]
+        end
+        { currency_value: currency_value, valid_until: valid_until }
+    end
+
+    def cache_nil?
       from_cache.nil? ||
-      from_cache['current_dollar'].nil? ||
-      from_cache['current_euro'].nil?
+      from_cache[CACHE_KEY_DOLLAR].nil? ||
+      from_cache[CACHE_KEY_EURO].nil?
     end
   end
 
