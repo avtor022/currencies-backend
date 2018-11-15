@@ -1,7 +1,8 @@
 class CurrenciesController < ApplicationController
 
   def index
-    if Currency.get_currencies.nil? || Currency.get_currencies[:dollar].nil? || Currency.get_currencies[:euro].nil?
+    current_currency = Currency.get_currencies
+    if current_currency.nil? || current_currency[:dollar].nil? || current_currency[:euro].nil?
       render json: {
         success: false,
         msg: 'Error: there is no data'
@@ -9,7 +10,7 @@ class CurrenciesController < ApplicationController
     else
       render json: {
         success: true,
-        currencies: Currency.get_currencies
+        currencies: current_currency
       }
     end
   end
@@ -17,7 +18,6 @@ class CurrenciesController < ApplicationController
   def create_forcing
     if @currency_forcing = Currency.new(currency_params).save
       index_forcing
-      Currency.get_currencies
     else
       show_error
     end
@@ -27,7 +27,6 @@ class CurrenciesController < ApplicationController
     @currency_forcing = Currency.find(params[:id])
     if @currency_forcing.destroy
       index_forcing
-      Currency.get_currencies
     else
       show_error
     end
