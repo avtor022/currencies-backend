@@ -1,14 +1,11 @@
 class CurrenciesController < ApplicationController
 
   def index
-    current_currency = Currency.get_currencies
-    if current_currency.nil? || current_currency[:dollar].nil? || current_currency[:euro].nil?
-      show_error('Error: there is no data')
+    current_currencies = Currency.get_currencies
+    if current_currencies.nil? || current_currencies[:dollar].nil? || current_currencies[:euro].nil?
+      render_error('Error: there is no data')
     else
-      render json: {
-        success: true,
-        currencies: current_currency
-      }
+      render_currencies(current_currencies)
     end
   end
 
@@ -16,30 +13,33 @@ class CurrenciesController < ApplicationController
     if currency_forcing = Currency.new(currency_params).save
       index_forcing
     else
-      show_error(currency_forcing.errors.first.last)
+      render_error(currency_forcing.errors.first.last)
     end
   end
 
   def destroy_forcing
     currency_forcing = Currency.find(params[:id])
-    if @currency_forcing.destroy
+    if currency_forcing.destroy
       index_forcing
     else
-      show_error(currency_forcing.errors.first.last)
+      render_error(currency_forcing.errors.first.last)
     end
   end
 
   def index_forcing
-    currency_forcing_list = Currency.all.order(id: :DESC)
-    render json: {
-      success: true,
-      currency_forcing_list: currency_forcing_list
-    }
+    render_currencies(Currency.all.order(id: :DESC))
   end
 
   private
 
-  def show_error(error_msg)
+  def render_currencies(currencies)
+    render json: {
+      success: true,
+      currencies: currencies
+    }
+  end
+
+  def render_error(error_msg)
     render json: {
       success: false,
       msg: error_msg
