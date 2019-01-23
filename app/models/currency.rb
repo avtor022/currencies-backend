@@ -26,6 +26,7 @@ class Currency < ApplicationRecord
         else
           [currency_from_site, (Time.now + 1.day).at_beginning_of_day]
         end
+        valid_until
         { currency_value: currency_value, valid_until: valid_until }
     end
 

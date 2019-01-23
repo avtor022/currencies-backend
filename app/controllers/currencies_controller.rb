@@ -1,12 +1,7 @@
 class CurrenciesController < ApplicationController
 
   def index
-    current_currencies = Currency.get_currencies
-    if current_currencies.nil? || current_currencies[:dollar].nil? || current_currencies[:euro].nil?
-      render_error('Error: there is no data')
-    else
-      render_currencies(current_currencies)
-    end
+    render_currencies(Currency.get_currencies)
   end
 
   def create_forcing
