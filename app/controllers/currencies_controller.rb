@@ -1,7 +1,11 @@
 class CurrenciesController < ApplicationController
 
   def index
-    render_currencies(Currency.get_currencies)
+    if Currency.get_currencies[:dollar].nil? && Currency.get_currencies[:euro].nil?
+      render_error()
+    else
+      render_currencies(Currency.get_currencies)
+    end
   end
 
   def create_forcing
@@ -34,7 +38,7 @@ class CurrenciesController < ApplicationController
     }
   end
 
-  def render_error(error_msg)
+  def render_error(error_msg = 'There are no data!')
     render json: {
       success: false,
       msg: error_msg

@@ -16,7 +16,7 @@ class Currency < ApplicationRecord
     end
 
     def currency_to_cache(currency_data)
-      Rails.cache.write("current_#{currency_data[:currency_type]}", currency_data[:currency_value], expires_in: (currency_data[:forcing_date] - Time.now).to_i)
+      Rails.cache.write("current_#{currency_data[:currency_type]}", currency_data[:currency_value], expires_in: (currency_data[:forcing_date] - Time.now).round.seconds)
     end
 
     def current_value_for_cache(currency_forcing, currency_from_site)
@@ -26,7 +26,6 @@ class Currency < ApplicationRecord
         else
           [currency_from_site, (Time.now + 1.day).at_beginning_of_day]
         end
-        valid_until
         { currency_value: currency_value, valid_until: valid_until }
     end
 
@@ -41,17 +40,17 @@ class Currency < ApplicationRecord
       Rails.cache.read_multi(CACHE_KEY_DOLLAR, CACHE_KEY_EURO)
     end
 
-    def get_currencies
-      update_cache if cache_nil?
-      { 'dollar': from_cache[CACHE_KEY_DOLLAR], 'euro': from_cache[CACHE_KEY_EURO] }
-    end
-
     def update_cache
       currency_forcing = forcing_current
       dollar = current_value_for_cache(currency_forcing[:dollar], CurrencyFromSite.current_dollar)
       currency_to_cache({currency_type: 'dollar', currency_value: dollar[:currency_value], forcing_date: dollar[:valid_until]})
       euro = current_value_for_cache(currency_forcing[:euro], CurrencyFromSite.current_euro)
       currency_to_cache({currency_type: 'euro', currency_value: euro[:currency_value], forcing_date: euro[:valid_until]})
+    end
+
+    def get_currencies
+      update_cache if cache_nil?
+      { 'dollar': from_cache[CACHE_KEY_DOLLAR], 'euro': from_cache[CACHE_KEY_EURO] }
     end
   end
 
