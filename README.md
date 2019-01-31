@@ -1,24 +1,18 @@
-# README
+# Бэкенд для web приложения Currencies.
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
-
-Things you may want to cover:
-
-* Ruby version
-
-* System dependencies
-
-* Configuration
-
-* Database creation
-
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
+#
+##### Для запуска приложения необходимо выполнить следующие шаги:
+* создать папку (например `currencies`)
+    - `~$ mkdir ./currencies && cd ./currencies`
+* в созданную папку скачать приложения: `currencies-backend`, `currencies-frontend`
+    - `~/currencies$ git clone https://github.com/avtor022/currencies-backend.git`
+    - `~/currencies$ git clone https://github.com/avtor022/currencies-frontend.git`
+* установить зависимости:
+    - `~/currencies$ cd ./currencies-backend && bundle install`
+    - `~/currencies$ cd ./currencies-frontend && npm install`
+* запуск приложения осуществляется с `/currencies-backend`
+    - `~/currencies$ cd ./currencies-backend && foreman start`
+#
+#
+##### Запуск тестов
+* `~/currencies/currencies-backend$ rspec`
